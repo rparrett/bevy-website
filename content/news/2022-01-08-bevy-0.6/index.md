@@ -18,17 +18,17 @@ For those who don't know, Bevy is a refreshingly simple data-driven game engine 
 
 To update an existing Bevy App or Plugin to **Bevy 0.6**, check out our [0.5 to 0.6 Migration Guide](/learn/book/migration-guides/0.5-0.6/).
 
-There are a _ton_ of improvements, bug fixes and quality of life tweaks in this release. Here are some of the highlights: 
+There are a _ton_ of improvements, bug fixes and quality of life tweaks in this release. Here are some of the highlights:
 
-* A brand new modern renderer that is prettier, faster, and simpler to extend
-* Directional and point light shadows
-* Clustered forward rendering
-* Frustum culling
-* Significantly faster sprite rendering with less boilerplate
-* Native WebGL2 support. You can test this out by [running the Bevy Examples in your browser!](/examples)
-* High level custom Materials
-* More powerful shaders: preprocessors, imports, WGSL support
-* Bevy ECS ergonomics and performance improvements. No more `.system()`!
+- A brand new modern renderer that is prettier, faster, and simpler to extend
+- Directional and point light shadows
+- Clustered forward rendering
+- Frustum culling
+- Significantly faster sprite rendering with less boilerplate
+- Native WebGL2 support. You can test this out by [running the Bevy Examples in your browser!](/examples)
+- High level custom Materials
+- More powerful shaders: preprocessors, imports, WGSL support
+- Bevy ECS ergonomics and performance improvements. No more `.system()`!
 
 Read on for details!
 
@@ -37,11 +37,12 @@ Read on for details!
 ## The New Bevy Renderer
 
 **Bevy 0.6** introduces a brand new modern renderer that is:
-* **Faster**: More parallel, less computation per-entity, more efficient CPU->GPU dataflow, and (with soon-to-be-enabled) pipelined rendering
-* **Prettier**: We're releasing the new renderer alongside a number of graphical improvements, such as directional and point light shadows, clustered forward rendering (so you can draw more lights in a scene), and spherical area lights. We also have a ton of new features in development (cascaded shadow maps, bloom, particles, shadow filters, and more!)
-* **Simpler**: Fewer layers of abstraction, simpler data flow, improved low-level, mid-level, and high-level interfaces, direct wgpu access 
-* **Modular to its core**: Standardized 2d and 3d core pipelines, extensible Render Phases and Views, composable entity/component-driven draw functions, shader imports, extensible and repeatable render pipelines via "sub graphs"
-* **Industry Proven**: We've taken inspiration from battle tested renderer architectures, such as [Bungie's pipelined Destiny renderer](https://advances.realtimerendering.com/destiny/gdc_2015/Tatarchuk_GDC_2015__Destiny_Renderer_web.pdf). We also learned a lot from (and worked closely with) other renderer developers in the Rust space, namely @aclysma ([rafx](https://github.com/aclysma/rafx)) and @cwfitzgerald ([rend3](https://github.com/BVE-Reborn/rend3)). The New Bevy Renderer wouldn't be what it is without them, and I highly recommend checking out their projects!
+
+- **Faster**: More parallel, less computation per-entity, more efficient CPU->GPU dataflow, and (with soon-to-be-enabled) pipelined rendering
+- **Prettier**: We're releasing the new renderer alongside a number of graphical improvements, such as directional and point light shadows, clustered forward rendering (so you can draw more lights in a scene), and spherical area lights. We also have a ton of new features in development (cascaded shadow maps, bloom, particles, shadow filters, and more!)
+- **Simpler**: Fewer layers of abstraction, simpler data flow, improved low-level, mid-level, and high-level interfaces, direct wgpu access
+- **Modular to its core**: Standardized 2d and 3d core pipelines, extensible Render Phases and Views, composable entity/component-driven draw functions, shader imports, extensible and repeatable render pipelines via "sub graphs"
+- **Industry Proven**: We've taken inspiration from battle tested renderer architectures, such as [Bungie's pipelined Destiny renderer](https://advances.realtimerendering.com/destiny/gdc_2015/Tatarchuk_GDC_2015__Destiny_Renderer_web.pdf). We also learned a lot from (and worked closely with) other renderer developers in the Rust space, namely @aclysma ([rafx](https://github.com/aclysma/rafx)) and @cwfitzgerald ([rend3](https://github.com/BVE-Reborn/rend3)). The New Bevy Renderer wouldn't be what it is without them, and I highly recommend checking out their projects!
 
 I promise I'll qualify all of those fluffy buzzwords below. I am confident that the New Bevy Renderer will be a rallying point for the Bevy graphics ecosystem and (hopefully) the Rust graphics ecosystem at large. We still have _plenty_ of work to do, but I'm proud of what we have accomplished so far and I'm excited for the future!
 
@@ -50,22 +51,23 @@ I promise I'll qualify all of those fluffy buzzwords below. I am confident that 
 ### Why build a new renderer?
 
 Before we cover what's new, it's worth discussing why we embarked on such a massive effort. The old Bevy Renderer got a number of things right:
-* **Modular render logic** (via the Render Graph)
-* **Multiple backends** (both first and third party)
-* **High level data-driven API**: this made it easy and ergonomic to write custom per-entity render logic
+
+- **Modular render logic** (via the Render Graph)
+- **Multiple backends** (both first and third party)
+- **High level data-driven API**: this made it easy and ergonomic to write custom per-entity render logic
 
 However, it also had a number of _significant_ shortcomings:
 
-* **Complex**: The "high-level ease of use" came at the cost of significant implementation complexity, performance overhead, and invented jargon. Users were often overwhelmed when trying to operate at any level but "high-level". When managing "render resources", it was easy to do something "wrong" and hard to tell "what went wrong".
-* **Often slow**: Features like "sprite rendering" were built on the costly high-level abstractions mentioned above. Performance was ... suboptimal when compared to other options in the ecosystem.
-* **User-facing internals**: It stored a lot of internal render state directly on each entity. This took up space, computing the state was expensive, and it gunked up user-facing APIs with a bunch of "do not touch" render Components. This state (or at least, the component metadata) needed to be written to / read from Scenes, which was also suboptimal and error prone.
-* **Repeating render logic was troublesome**: Viewports, rendering to multiple textures / windows, and shadow maps were possible, but they required hard-coding, special casing, and boilerplate. This wasn't aligned with our goals for modularity and clarity.
+- **Complex**: The "high-level ease of use" came at the cost of significant implementation complexity, performance overhead, and invented jargon. Users were often overwhelmed when trying to operate at any level but "high-level". When managing "render resources", it was easy to do something "wrong" and hard to tell "what went wrong".
+- **Often slow**: Features like "sprite rendering" were built on the costly high-level abstractions mentioned above. Performance was ... suboptimal when compared to other options in the ecosystem.
+- **User-facing internals**: It stored a lot of internal render state directly on each entity. This took up space, computing the state was expensive, and it gunked up user-facing APIs with a bunch of "do not touch" render Components. This state (or at least, the component metadata) needed to be written to / read from Scenes, which was also suboptimal and error prone.
+- **Repeating render logic was troublesome**: Viewports, rendering to multiple textures / windows, and shadow maps were possible, but they required hard-coding, special casing, and boilerplate. This wasn't aligned with our goals for modularity and clarity.
 
 ### Why now?
 
 The shortcomings above were acceptable in Bevy's early days, but were clearly holding us back as Bevy grew from a [one person side project](/news/introducing-bevy) to the most popular Rust game engine on GitHub (and one of the most [popular open source game engines ... period](https://github.com/topics/game-engine)). A "passable" renderer no longer cuts it when we have hundreds of contributors, a paid full-time developer, thousands of individual users, and a growing number of companies paying people to work on Bevy apps and features. It was time for a change.
 
-For a deeper view into our decision-making and development process (including the alternatives we considered) check out the [New Renderer Tracking Issue](https://github.com/bevyengine/bevy/issues/2535). 
+For a deeper view into our decision-making and development process (including the alternatives we considered) check out the [New Renderer Tracking Issue](https://github.com/bevyengine/bevy/issues/2535).
 
 ### Pipelined Rendering: Extract, Prepare, Queue, Render
 
@@ -73,8 +75,8 @@ For a deeper view into our decision-making and development process (including th
 
 Pipelined Rendering is a cornerstone of the new renderer. It accomplishes a number of goals:
 
-* **Increased Parallelism**: We can now start running the main app logic for the next frame, while rendering the current frame. Given that rendering is often a bottleneck, this can be a huge win when there is also a lot of app work to do.
-* **Clearer Dataflow and Structure**: Pipelining requires drawing hard lines between "app logic" and "render logic", with a fixed synchronization point (which we call the "extract" step). This makes it easier to reason about dataflow and ownership. Code can be organized along these lines, which improves clarity.
+- **Increased Parallelism**: We can now start running the main app logic for the next frame, while rendering the current frame. Given that rendering is often a bottleneck, this can be a huge win when there is also a lot of app work to do.
+- **Clearer Dataflow and Structure**: Pipelining requires drawing hard lines between "app logic" and "render logic", with a fixed synchronization point (which we call the "extract" step). This makes it easier to reason about dataflow and ownership. Code can be organized along these lines, which improves clarity.
 
 From a high level, traditional "non-pipelined rendering" looks like this:
 
@@ -87,10 +89,11 @@ Pipelined rendering looks like this:
 Much better!
 
 Bevy apps are now split into the Main App, which is where app logic occurs, and the Render App, which has its own separate ECS World and Schedule. The Render App consists of the following ECS stages, which developers add ECS Systems to when they are composing new render features:
-* **Extract**: This is the one synchronization point between the Main World and the Render World. Relevant Entities, Components, and Resources are read from the Main World and written to corresponding Entities, Components, and Resources in the Render World. The goal is to keep this step as quick as possible, as it is the one piece of logic that cannot run in parallel. It is a good rule of thumb to extract only the minimum amount of data needed for rendering, such as by only considering "visible" entities and only copying the relevant components.
-* **Prepare**: Extracted data is then "prepared" by writing it to the GPU. This generally involves writing to GPU Buffers and Textures and creating Bind Groups.
-* **Queue**: This "queues" render jobs that feed off of "prepared" data.
-* **Render**: This runs the Render Graph, which produces actual render commands from the results stored in the Render World from the Extract, Prepare, and Queue steps. 
+
+- **Extract**: This is the one synchronization point between the Main World and the Render World. Relevant Entities, Components, and Resources are read from the Main World and written to corresponding Entities, Components, and Resources in the Render World. The goal is to keep this step as quick as possible, as it is the one piece of logic that cannot run in parallel. It is a good rule of thumb to extract only the minimum amount of data needed for rendering, such as by only considering "visible" entities and only copying the relevant components.
+- **Prepare**: Extracted data is then "prepared" by writing it to the GPU. This generally involves writing to GPU Buffers and Textures and creating Bind Groups.
+- **Queue**: This "queues" render jobs that feed off of "prepared" data.
+- **Render**: This runs the Render Graph, which produces actual render commands from the results stored in the Render World from the Extract, Prepare, and Queue steps.
 
 So pipelined rendering actually looks more like this, with the next app update occurring after the extract step:
 
@@ -107,8 +110,9 @@ As a quick callout, pipelined rendering doesn't _actually_ happen in parallel ye
 The New Bevy Renderer has a Render Graph, [much like the old Bevy renderer](/news/introducing-bevy/#render-graph). Render Graphs are a way to logically model GPU command construction in a modular way. Graph Nodes pass GPU resources like Textures and Buffers (and sometimes Entities) to each other, forming a directed acyclic graph. When a Graph Node runs, it uses its graph inputs and the Render World to construct GPU command lists.
 
 The biggest change to this API is that we now support Sub Graphs, which are basically "namespaced" Render Graphs that can be run from any Node in the graph with arbitrary inputs. This enables us to define things like a "2d" and "3d" sub graph, which users can insert custom logic into. This opens two doors simultaneously:
-* The ability to repeat render logic, but for different views (split screen, mirrors, rendering to a texture, shadow maps).
-* The ability for users to extend this repeated logic.
+
+- The ability to repeat render logic, but for different views (split screen, mirrors, rendering to a texture, shadow maps).
+- The ability for users to extend this repeated logic.
 
 ### Embracing wgpu
 
@@ -117,15 +121,17 @@ The biggest change to this API is that we now support Sub Graphs, which are basi
 Bevy has always used [wgpu](https://github.com/gfx-rs/wgpu), a native GPU abstraction layer with support for most graphics backends: Vulkan, Metal, DX12, OpenGL, WebGL2, and WebGPU (and WIP DX11 support). But the old renderer hid it behind our own hardware abstraction layer. In practice, this was largely just a mirror of the wgpu API. It gave us the ability to build our own graphics backends without bothering the wgpu folks, but in practice it created a lot of pain (due to being an imperfect mirror), overhead (due to introducing a dynamic API and requiring global mutex locks over GPU resource collections), and complexity (bevy_render -> wgpu -> Vulkan). In return, we didn't get many practical benefits ... just slightly more autonomy.
 
 The truth of the matter is that wgpu already occupies _exactly_ the space we want it to:
-* Multiple backends, with the goal to support as many platforms as possible
-* A "baseline" feature set that works almost everywhere with a consistent API
-* A "limits" and "features" system that enables opting-in to arbitrary (sometimes backend-specific features) and detecting when those features are available. This will be important when we start adding things like raytracing and VR support.
-* A modern GPU API, but without the pain and complexity of raw Vulkan. Perfect for user-facing Bevy renderer extensions.
+
+- Multiple backends, with the goal to support as many platforms as possible
+- A "baseline" feature set that works almost everywhere with a consistent API
+- A "limits" and "features" system that enables opting-in to arbitrary (sometimes backend-specific features) and detecting when those features are available. This will be important when we start adding things like raytracing and VR support.
+- A modern GPU API, but without the pain and complexity of raw Vulkan. Perfect for user-facing Bevy renderer extensions.
 
 However, initially there were a couple of reasons not to make it our "public facing API":
-* **Complexity**: wgpu used to be built on top of gfx-hal (an older GPU abstraction layer also built and managed by the wgpu team). These multiple layers of abstraction in multiple repos made contributing to and reasoning about the internals difficult. Additionally, I have a rule for "3rd party dependencies publicly exposed in Bevy APIs": we must feel comfortable forking and maintaining them if we need to (ex: upstream stops being maintained, visions diverge, etc). I wasn't particularly comfortable with doing that with the old architecture.
-* **Licensing**: wgpu used to be licensed under the "copyleft" MPL license, which created concerns about integration with proprietary graphics apis (such as consoles like the Switch).
-* **WebGL2 Support**: wgpu used to not have a WebGL2 backend. Bevy's old renderer had a custom WebGL2 backend and we weren't willing to give up support for the Web as a platform.
+
+- **Complexity**: wgpu used to be built on top of gfx-hal (an older GPU abstraction layer also built and managed by the wgpu team). These multiple layers of abstraction in multiple repos made contributing to and reasoning about the internals difficult. Additionally, I have a rule for "3rd party dependencies publicly exposed in Bevy APIs": we must feel comfortable forking and maintaining them if we need to (ex: upstream stops being maintained, visions diverge, etc). I wasn't particularly comfortable with doing that with the old architecture.
+- **Licensing**: wgpu used to be licensed under the "copyleft" MPL license, which created concerns about integration with proprietary graphics apis (such as consoles like the Switch).
+- **WebGL2 Support**: wgpu used to not have a WebGL2 backend. Bevy's old renderer had a custom WebGL2 backend and we weren't willing to give up support for the Web as a platform.
 
 _Almost immediately_ after we voiced these concerns, @kvark kicked off a [relicensing effort](https://github.com/gfx-rs/wgpu/issues/392) that switched wgpu to the Rust-standard dual MIT/Apache-2.0 license. They also removed gfx-hal in favor of a [much simpler and flatter architecture](https://gfx-rs.github.io/2021/08/18/release-0.10.html). Soon after, @zicklag [added a WebGL2 backend](https://github.com/gfx-rs/wgpu/pull/1686). Having resolved all of my remaining hangups, it was clear to me that @kvark's priorities were aligned with mine and that I could trust them to adjust to community feedback.
 
@@ -137,14 +143,14 @@ Bevy was also updated to use the latest and greatest wgpu version: [0.12](https:
 
 <div class="release-feature-authors">authors: @cart</div>
 
-The new renderer is what I like to call "ECS-driven": 
+The new renderer is what I like to call "ECS-driven":
 
-* As we covered previously, the Render World is populated using data Extracted from the Main World.
-* Scenes are rendered from one or more Views, which are just Entities in the Render World with Components relevant to that View. View Entities can be extended with arbitrary Components, which makes it easy to extend the renderer with custom View data and logic. Cameras aren't the only type of View. Views can be defined by the Render App for arbitrary concepts, such as "shadow map perspectives".
-* Views can have zero or more generic `RenderPhase<T: PhaseItem>` Components, where T defines the "type and scope" of thing being rendered in the phase (ex: "transparent 3d entities in the main pass"). At its core, a `RenderPhase` is a (potentially sorted) list of Entities to be drawn.
-* Entities in a RenderPhase are drawn using DrawFunctions, which read ECS data from the Render World and produce GPU commands.
-* DrawFunctions can (optionally) be composed of modular DrawCommands. These are generally scoped to specific actions like `SetStandardMaterialBindGroup`, `DrawMesh`, `SetItemPipeline`, etc. Bevy provides a number of built-in DrawCommands and users can also define their own.
-* Render Graph Nodes convert a specific View's RenderPhases into GPU commands by iterating each RenderPhases' Entities and running the appropriate Draw Functions.
+- As we covered previously, the Render World is populated using data Extracted from the Main World.
+- Scenes are rendered from one or more Views, which are just Entities in the Render World with Components relevant to that View. View Entities can be extended with arbitrary Components, which makes it easy to extend the renderer with custom View data and logic. Cameras aren't the only type of View. Views can be defined by the Render App for arbitrary concepts, such as "shadow map perspectives".
+- Views can have zero or more generic `RenderPhase<T: PhaseItem>` Components, where T defines the "type and scope" of thing being rendered in the phase (ex: "transparent 3d entities in the main pass"). At its core, a `RenderPhase` is a (potentially sorted) list of Entities to be drawn.
+- Entities in a RenderPhase are drawn using DrawFunctions, which read ECS data from the Render World and produce GPU commands.
+- DrawFunctions can (optionally) be composed of modular DrawCommands. These are generally scoped to specific actions like `SetStandardMaterialBindGroup`, `DrawMesh`, `SetItemPipeline`, etc. Bevy provides a number of built-in DrawCommands and users can also define their own.
+- Render Graph Nodes convert a specific View's RenderPhases into GPU commands by iterating each RenderPhases' Entities and running the appropriate Draw Functions.
 
 If that seems complicated ... don't worry! These are what I like to call "mid-level" renderer APIs. They provide the necessary tools for experienced render feature developers to build modular render plugins with relative ease. We also provide easy to use high-level APIs like Materials, which cover the majority of "custom shader logic" use cases.
 
@@ -190,8 +196,9 @@ impl Material for CustomMaterial {
 There is also a {{rust_type(type="trait" crate="bevy_pbr" version="0.6.0" name="SpecializedMaterial")}} variant, which enables "specializing" shaders and pipelines using custom per-entity keys. This extra flexibility isn't always needed, but when you need it, you will be glad to have it! For example, the built-in StandardMaterial uses specialization to toggle whether or not the Entity should receive lighting in the shader.
 
 We also have big plans to make {{rust_type(type="trait" crate="bevy_pbr" version="0.6.0" name="Material" plural=true)}} even better:
-* **Bind Group derives**: this should cut down on the boilerplate of passing materials to the GPU.
-* **Material Instancing**: materials enable us to implement high-level mesh instancing as a simple configuration item for both built in and custom materials.
+
+- **Bind Group derives**: this should cut down on the boilerplate of passing materials to the GPU.
+- **Material Instancing**: materials enable us to implement high-level mesh instancing as a simple configuration item for both built in and custom materials.
 
 ### Visibility and Frustum Culling
 
@@ -200,7 +207,6 @@ We also have big plans to make {{rust_type(type="trait" crate="bevy_pbr" version
 [![view frustum](ViewFrustum.svg)](https://en.wikipedia.org/wiki/Viewing_frustum#/media/File:ViewFrustum.svg)
 
 Drawing things is expensive! It requires writing data from the CPU to the GPU, constructing draw calls, and running shaders. We can save a lot of time by _not_ drawing things that the camera can't see. "Frustum culling" is the act of excluding objects that are outside the bounds of the camera's "view frustum", to avoid wasting work drawing them. For large scenes, this can be the difference between a crisp 60 frames per second and chugging to a grinding halt.
-
 
 **Bevy 0.6** now automatically does frustum culling for 3d objects using their axis-aligned bounding boxes. We might also enable this for 2d objects in future releases, but the wins there will be less pronounced, as drawing sprites is now much cheaper thanks to the new batched rendering.
 
@@ -219,7 +225,6 @@ Note: directional shadows currently require more manual configuration than neces
 <div class="release-feature-authors">authors: @mtsr, Rob Swain (@superdump), @cart</div>
 
 Point lights can now cast "omnidirectional shadows", which can be enabled by setting `PointLight::shadows_enabled` to `true`:
-
 
 ![point light](point_light.png)
 
@@ -257,7 +262,7 @@ Bevy's StandardMaterial now has an `alpha_mode` field, which can be set to `Alph
 
 ![alpha blend modes](alpha_blend.png)
 
-### Clustered Forward Rendering 
+### Clustered Forward Rendering
 
 <div class="release-feature-authors">authors: Rob Swain (@superdump)</div>
 
@@ -347,7 +352,6 @@ fn vertex(vertex: Vertex) -> VertexOutput {
 }
 ```
 
-
 ### Shader Preprocessor
 
 <div class="release-feature-authors">authors: @cart, Rob Swain (@superdump), @mockersf</div>
@@ -391,7 +395,7 @@ Plugin-provided imports, which can be registered by Bevy Plugins with arbitrary 
 fn vertex(vertex: Vertex) -> VertexOutput {
     let world_position = vec4<f32>(vertex.position, 1.0);
     var out: VertexOutput;
-    // The `view` variable comes from the imported bind group 
+    // The `view` variable comes from the imported bind group
     out.clip_position = view.view_proj * world_position;
     return out;
 }
@@ -425,11 +429,11 @@ Bevy now uses [Naga](https://github.com/gfx-rs/naga) for all of its shader needs
 
 Render logic for internal Bevy crates had to be rewritten in a number of cases to take advantage of the new renderer. The following people helped with this effort:
 
-* bevy_sprites: @cart, @StarArawn, @Davier 
-* bevy_pbr: Rob Swain (@superdump), @aevyrie, @cart, @zicklag, @jakobhellermann
-* bevy_ui: @Davier
-* bevy_text: @Davier
-* bevy_gltf: Rob Swain (@superdump)
+- bevy_sprites: @cart, @StarArawn, @Davier
+- bevy_pbr: Rob Swain (@superdump), @aevyrie, @cart, @zicklag, @jakobhellermann
+- bevy_ui: @Davier
+- bevy_text: @Davier
+- bevy_gltf: Rob Swain (@superdump)
 
 ### WebGL2 Support
 
@@ -452,14 +456,13 @@ You can try out Bevy's WASM support in your browser using our new [Bevy Examples
 
 <div class="release-feature-authors">authors: Rob Swain (@superdump)</div>
 
-For improved precision in the "useful range", the industry has largely adopted "reverse projections" with an "infinite" far plane. The new Bevy renderer was adapted to use the "right-handed infinite reverse z" projection. [This Nvidia article](https://developer.nvidia.com/content/depth-precision-visualized) does a great job of explaining why this is so worthwhile. 
+For improved precision in the "useful range", the industry has largely adopted "reverse projections" with an "infinite" far plane. The new Bevy renderer was adapted to use the "right-handed infinite reverse z" projection. [This Nvidia article](https://developer.nvidia.com/content/depth-precision-visualized) does a great job of explaining why this is so worthwhile.
 
 ### Compute Shaders
 
 The new renderer makes it possible for users to write compute shaders. Our new ["compute shader game of life" example](https://github.com/bevyengine/bevy/blob/v0.6.0/examples/shader/compute_shader_game_of_life.rs) (by @jakobhellermann) illustrates how to write compute shaders in Bevy.
 
 ![compute game of life](compute.png)
-
 
 ### New Multiple Windows Example
 
@@ -497,8 +500,9 @@ var<uniform> mesh: Mesh;
 ```
 
 We (in the short term) forked crevice for a couple of reasons:
-* To merge [Array Support PR](https://github.com/LPGhatguy/crevice/pull/27/) by @ElectronicRU, as we need support for arrays in our uniforms.  
-* To re-export crevice derives and provide an "out of the box" experience for Bevy
+
+- To merge [Array Support PR](https://github.com/LPGhatguy/crevice/pull/27/) by @ElectronicRU, as we need support for arrays in our uniforms.
+- To re-export crevice derives and provide an "out of the box" experience for Bevy
 
 Ultimately, we'd like to move back upstream if possible. A big thanks to the crevice developers for building such useful software!
 
@@ -522,7 +526,7 @@ Mesh::from(UVSphere {
 
 <div class="release-feature-authors">authors: @jakobhellermann</div>
 
-The `Mesh` type now has a `compute_flat_normals()` function. Imported GLTF meshes without normals now automatically have flat normals computed, [in accordance with the GLTF spec](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#meshes). 
+The `Mesh` type now has a `compute_flat_normals()` function. Imported GLTF meshes without normals now automatically have flat normals computed, [in accordance with the GLTF spec](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#meshes).
 
 ![flat normals](flat_normals.png)
 
@@ -583,12 +587,12 @@ impl<T: Send + Sync + 'static> Component for T {}
 
 This removed the need for users to manually implement {{rust_type(type="trait" crate="bevy_ecs" version="0.6.0" name="Component")}} for their types. Early on this seemed like an ergonomics win with no downsides. But Bevy ECS, our understanding of the problem space, and our plans for the future have changed a lot since then:
 
-* **It turns out _not everything_ should be a Component**: Our users _constantly_ accidentally add non-component types as components. New users accidentally adding Bundles and type constructors as Components are our most common `#help` channel threads on [our Discord](https://discord.gg/bevy). This class of error is very hard to debug because things just silently "don't work". When not everything is a Component, rustc can properly yell at you with informative errors when you mess up.
-* **Optimizations**: If we implement Component for everything automatically, we can't customize the Component type with associated types. This prevents an entire class of optimization. For example, Bevy ECS now has [multiple Component storage types](/news/bevy-0-5/#hybrid-component-storage-the-solution). By moving the storage type into Component, we enable rustc to optimize checks that would normally need to happen at runtime. @Frizi was able to [significantly improve our Query iterator performance](https://github.com/bevyengine/bevy/pull/2254#issuecomment-857863116) by moving the storage type into Component. I expect us to find more optimizations in this category.
-* **Automatic registration**: Moving more logic into Component also gives us the ability to do fancier things in the future like "automatically registering Reflect impls when deriving Component". Non-blanket Component impls do add a small amount of boilerplate, but they also have the potential to massively reduce the "total boilerplate" of an app.
-* **Documentation**: Deriving Component serves as a form of self-documentation. It's now easy to tell what types are components at a glance.
-* **Organized**: In Bevy 0.5 Component-specific configuration like "storage type" had to be registered in a centralized Plugin somewhere. Moving Component configuration into the Component trait allows users to keep "Component type information" right next to the type itself. 
-* **Event Handlers**: Non-blanket Component impls will eventually allow us to add event handlers like `on_insert(world: &mut World)` to the Component trait. Very useful! 
+- **It turns out _not everything_ should be a Component**: Our users _constantly_ accidentally add non-component types as components. New users accidentally adding Bundles and type constructors as Components are our most common `#help` channel threads on [our Discord](https://discord.gg/bevy). This class of error is very hard to debug because things just silently "don't work". When not everything is a Component, rustc can properly yell at you with informative errors when you mess up.
+- **Optimizations**: If we implement Component for everything automatically, we can't customize the Component type with associated types. This prevents an entire class of optimization. For example, Bevy ECS now has [multiple Component storage types](/news/bevy-0-5/#hybrid-component-storage-the-solution). By moving the storage type into Component, we enable rustc to optimize checks that would normally need to happen at runtime. @Frizi was able to [significantly improve our Query iterator performance](https://github.com/bevyengine/bevy/pull/2254#issuecomment-857863116) by moving the storage type into Component. I expect us to find more optimizations in this category.
+- **Automatic registration**: Moving more logic into Component also gives us the ability to do fancier things in the future like "automatically registering Reflect impls when deriving Component". Non-blanket Component impls do add a small amount of boilerplate, but they also have the potential to massively reduce the "total boilerplate" of an app.
+- **Documentation**: Deriving Component serves as a form of self-documentation. It's now easy to tell what types are components at a glance.
+- **Organized**: In Bevy 0.5 Component-specific configuration like "storage type" had to be registered in a centralized Plugin somewhere. Moving Component configuration into the Component trait allows users to keep "Component type information" right next to the type itself.
+- **Event Handlers**: Non-blanket Component impls will eventually allow us to add event handlers like `on_insert(world: &mut World)` to the Component trait. Very useful!
 
 Hopefully by now you're convinced that this is the right move. If not ... I'm sorry ... you still need to implement Component manually in Bevy 0.6. You can either derive Component:
 
@@ -743,7 +747,7 @@ struct CustomParam<'w, 's> {
 
 <div class="release-feature-authors">authors: @BoxyUwU, @TheRawMeatball, @Frizi, @thebluefish, @sapir, @bjorn3, @DJMcNab</div>
 
-Bevy ECS received a solid number of soundness and correctness bug fixes this release, alongside some unsafe code block removals. Queries and internal storages like Tables and BlobVecs in particular had a number of fixes and improvements in these areas. As Bevy ECS matures, our bar for unsafe code blocks and soundness must also mature. Bevy ECS will probably never be 100% free of unsafe code blocks, because we are modeling parallel data access that Rust literally cannot reason about without our help. But we are committed to removing as much unsafe code as we can (and we have a number of refactors in the works to further improve the situation). 
+Bevy ECS received a solid number of soundness and correctness bug fixes this release, alongside some unsafe code block removals. Queries and internal storages like Tables and BlobVecs in particular had a number of fixes and improvements in these areas. As Bevy ECS matures, our bar for unsafe code blocks and soundness must also mature. Bevy ECS will probably never be 100% free of unsafe code blocks, because we are modeling parallel data access that Rust literally cannot reason about without our help. But we are committed to removing as much unsafe code as we can (and we have a number of refactors in the works to further improve the situation).
 
 ### Hierarchy Convenience Functions
 
@@ -777,7 +781,7 @@ UI now respects the flexbox `Overflow::Hidden` property. This can be used to cut
 
 Note that while `Transform::scale` does have its uses, it is generally still a good idea to adjust text size using the "font size" to ensure it renders "crisply".
 
-### Window Transparency 
+### Window Transparency
 
 <div class="release-feature-authors">authors: @louisgjohnson</div>
 
@@ -831,7 +835,7 @@ version = "0.1.0"
 edition = "2021"
 ```
 
-Note that "virtual Cargo workspaces" still need to manually define `resolver = "2"`, even in Rust 2021. [Refer to the Rust 2021 documentation](https://doc.rust-lang.org/edition-guide/rust-2021/default-cargo-resolver.html#details) for details. 
+Note that "virtual Cargo workspaces" still need to manually define `resolver = "2"`, even in Rust 2021. [Refer to the Rust 2021 documentation](https://doc.rust-lang.org/edition-guide/rust-2021/default-cargo-resolver.html#details) for details.
 
 ```toml
 [workspace]
@@ -855,11 +859,11 @@ fn system(gamepads: Res<Gamepads>) {
 }
 ```
 
-### Input "any" variants 
+### Input "any" variants
 
 <div class="release-feature-authors">authors: @DJMcNab</div>
 
-`Input` collections now have an `any_pressed()` function, which returns true when any of the given inputs are pressed. 
+`Input` collections now have an `any_pressed()` function, which returns true when any of the given inputs are pressed.
 
 ```rust
  fn system(input: Res<Input<KeyCode>>) {
@@ -901,7 +905,7 @@ struct Foo {
     bar: usize,
 }
 
-let foo = Foo::from_reflect(&dyn some_reflected_value).unwrap(); 
+let foo = Foo::from_reflect(&dyn some_reflected_value).unwrap();
 ```
 
 ## Bevy Error Codes
@@ -916,13 +920,13 @@ Error codes and their descriptions also have an automatically-generated [page on
 
 <div class="release-feature-authors">authors: @mockersf</div>
 
-The curated awesome-bevy GitHub repo containing a list of Bevy plugins, crates, apps, and learning resources is now reborn as [Bevy Assets](https://github.com/bevyengine/bevy-assets)! 
+The curated awesome-bevy GitHub repo containing a list of Bevy plugins, crates, apps, and learning resources is now reborn as [Bevy Assets](https://github.com/bevyengine/bevy-assets)!
 
 Bevy Assets introduces:
 
-* A structured toml format
-* Asset icons
-* [bevy-website integration](/assets)
+- A structured toml format
+- Asset icons
+- [bevy-website integration](/assets)
 
 This is just the beginning! We have plans to integrate with [crates.io](http://crates.io) and GitHub, improve indexing / tagging / searchability, add asset-specific pages, prettier styles, content delivery, and more. Ultimately we want this to grow into something that can enable first-class, modern asset-driven workflows.
 
@@ -936,26 +940,26 @@ Thanks to the relevant contributors ([all 246 of them](https://github.com/bevyen
 
 I originally chose to license Bevy exclusively under MIT for a variety of reasons:
 
-* People and companies generally know and trust the MIT license more than any other license. Apache 2.0 is less known and trusted.
-* It is short and easy to understand
-* Many people aren't familiar with the "multiple license options ... choose your favorite" approach. I didn't want to scare people away unnecessarily.
-* Other open source engines like Godot have had a lot of success with MIT-only licensing
+- People and companies generally know and trust the MIT license more than any other license. Apache 2.0 is less known and trusted.
+- It is short and easy to understand
+- Many people aren't familiar with the "multiple license options ... choose your favorite" approach. I didn't want to scare people away unnecessarily.
+- Other open source engines like Godot have had a lot of success with MIT-only licensing
 
 However, there were a variety of issues that have come up that make dual-licensing Bevy under both MIT and Apache-2.0 compelling:
 
-* The MIT license (arguably) requires binaries to reproduce countless copies of the same license boilerplate for every MIT library in use. Apache-2.0 allows us to compress the boilerplate into a single instance of the license.
-* The Apache-2.0 license has protections from patent trolls and an explicit contribution licensing clause.
-* The Rust ecosystem is largely Apache-2.0. Being available under that license is good for interoperation and opens the doors to upstreaming Bevy code into other projects (Rust, the async ecosystem, etc).
-* The Apache license is incompatible with GPLv2, but MIT is compatible. 
+- The MIT license (arguably) requires binaries to reproduce countless copies of the same license boilerplate for every MIT library in use. Apache-2.0 allows us to compress the boilerplate into a single instance of the license.
+- The Apache-2.0 license has protections from patent trolls and an explicit contribution licensing clause.
+- The Rust ecosystem is largely Apache-2.0. Being available under that license is good for interoperation and opens the doors to upstreaming Bevy code into other projects (Rust, the async ecosystem, etc).
+- The Apache license is incompatible with GPLv2, but MIT is compatible.
 
 ## Bevy Org Changes
 
 ### More pull request mergers!
 
-I've been at my scalability limits for a while. It has been  * cough * ... challenging  ... to build the engine features I need to, review every single pull request quickly, and preserve my mental health. I've made it this far ... sometimes by overworking myself and sometimes by letting PRs sit unmerged for longer than I'd like. By scaling out, we can have our cake and eat it too!
+I've been at my scalability limits for a while. It has been _ cough _ ... challenging ... to build the engine features I need to, review every single pull request quickly, and preserve my mental health. I've made it this far ... sometimes by overworking myself and sometimes by letting PRs sit unmerged for longer than I'd like. By scaling out, we can have our cake and eat it too!
 
-* @mockersf now has merge rights for "uncontroversial changes"
-* @alice-i-cecile now has merge rights for "uncontroversial documentation changes"
+- @mockersf now has merge rights for "uncontroversial changes"
+- @alice-i-cecile now has merge rights for "uncontroversial documentation changes"
 
 ### New issue labels
 
@@ -965,7 +969,7 @@ After [much discussion about naming conventions and colors](https://github.com/b
 
 <div class="release-feature-authors">authors: @alice-i-cecile</div>
 
-We now have a relatively complete [Contributors Guide](https://github.com/bevyengine/bevy/blob/main/CONTRIBUTING.md). If you are interested in contributing code or documentation to Bevy, that is a great place to start! 
+We now have a relatively complete [Contributors Guide](https://github.com/bevyengine/bevy/blob/main/CONTRIBUTING.md). If you are interested in contributing code or documentation to Bevy, that is a great place to start!
 
 ### CI Build System Improvements
 
@@ -973,13 +977,13 @@ We now have a relatively complete [Contributors Guide](https://github.com/bevyen
 
 We made a ton of CI improvements this release:
 
-* We now fail on cargo doc warnings
-* We now use [cargo deny](https://github.com/EmbarkStudios/cargo-deny) to protect against vulnerabilities, duplicate dependencies, and invalid licenses
-* PRs are now automatically labeled with the `S-Needs-Triage` label
-* Ci stability and speed improvements
-* We now check that our benchmarks build
-* We now assert compiler errors for compile_fail tests, giving us much stricter guarantees
-* Examples are now run using lavapipe (instead of swiftshader) for faster CI validation
+- We now fail on cargo doc warnings
+- We now use [cargo deny](https://github.com/EmbarkStudios/cargo-deny) to protect against vulnerabilities, duplicate dependencies, and invalid licenses
+- PRs are now automatically labeled with the `S-Needs-Triage` label
+- Ci stability and speed improvements
+- We now check that our benchmarks build
+- We now assert compiler errors for compile_fail tests, giving us much stricter guarantees
+- Examples are now run using lavapipe (instead of swiftshader) for faster CI validation
 
 ## What's Next For Bevy?
 
@@ -994,30 +998,32 @@ In the last two Bevy releases we made massive, sweeping changes to core systems.
 From now on, we will cut releases _approximately_ once every three months (as an upper bound ... sometimes we might release early if it makes sense). After the end of a release cycle, we will start preparing to cut a release. If there are small tweaks that need to be made or "life happens" ... we will happily postpone releases. But we won't hold releases back for "big ticket" items anymore.
 
 We are balancing a lot of different concerns here:
-* Building trust with Bevy contributors that their changes will land in a timely manner
-* Building trust with Bevy users that they will receive regular updates and bug fixes
-* Giving enough time between releases to cut down on churn in the Bevy Plugin ecosystem (Bevy isn't "stable" yet, but longer releases give reasonable windows of "ecosystem stability") 
-* Providing enough content in a release to generate "hype". Bevy release blog posts tend to be a "rallying cry" for the community and I don't want to lose that.
-* Establishing proper work / life balance for core developers (crunch is bad!)
-    
+
+- Building trust with Bevy contributors that their changes will land in a timely manner
+- Building trust with Bevy users that they will receive regular updates and bug fixes
+- Giving enough time between releases to cut down on churn in the Bevy Plugin ecosystem (Bevy isn't "stable" yet, but longer releases give reasonable windows of "ecosystem stability")
+- Providing enough content in a release to generate "hype". Bevy release blog posts tend to be a "rallying cry" for the community and I don't want to lose that.
+- Establishing proper work / life balance for core developers (crunch is bad!)
+
 We will refine this process over time and see what works best.
 
 ### More Renderer Features
 
-* **Post-Processing Stack / HDR / Bloom**: HDR and bloom [almost made it into Bevy 0.6](https://github.com/bevyengine/bevy/pull/2876), but we decided to hold them back so we can polish them a bit and build a proper "modular post-processing stack".
-* **Skeletal Animation**: Ultimately Bevy will have a general purpose, property based animation system (we already have a [working implementation](https://github.com/bevyengine/bevy/pull/1429)). We've been holding off on adding skeletal animation, so we can slot it in to that system, but in retrospect that was a mistake. People need skeletal animation _now_. In the short term we will build a scoped 3d skeletal animation system, just to get the ball rolling. Then later we will port it to the general purpose system (whenever that is ready), 
-* **Screen Space Ambient Occlusion (SSAO)**: A popular and straightforward ambient occlusion approximation that can drastically improve render quality.
-* **Global Illumination**: GI will provide a massive boost to the feel of "realism", so it is worth prioritizing at least one form of GI in the short term. This is a complicated topic and will require experimentation.
-* **Compressed Textures**: This will make scenes load faster and cut down on GPU memory usage.
-* **Shadow Filters and Cascades**: Rob Swain (@superdump) has already done a lot of work in this area, so we will hopefully see that materialize in a Bevy release soon.
-* **PBR Shader Code Reuse**: We will make it easier to define custom PBR shaders by making the PBR shader more modular and making it easier to import specific parts of the PBR shader.
+- **Post-Processing Stack / HDR / Bloom**: HDR and bloom [almost made it into Bevy 0.6](https://github.com/bevyengine/bevy/pull/2876), but we decided to hold them back so we can polish them a bit and build a proper "modular post-processing stack".
+- **Skeletal Animation**: Ultimately Bevy will have a general purpose, property based animation system (we already have a [working implementation](https://github.com/bevyengine/bevy/pull/1429)). We've been holding off on adding skeletal animation, so we can slot it in to that system, but in retrospect that was a mistake. People need skeletal animation _now_. In the short term we will build a scoped 3d skeletal animation system, just to get the ball rolling. Then later we will port it to the general purpose system (whenever that is ready),
+- **Screen Space Ambient Occlusion (SSAO)**: A popular and straightforward ambient occlusion approximation that can drastically improve render quality.
+- **Global Illumination**: GI will provide a massive boost to the feel of "realism", so it is worth prioritizing at least one form of GI in the short term. This is a complicated topic and will require experimentation.
+- **Compressed Textures**: This will make scenes load faster and cut down on GPU memory usage.
+- **Shadow Filters and Cascades**: Rob Swain (@superdump) has already done a lot of work in this area, so we will hopefully see that materialize in a Bevy release soon.
+- **PBR Shader Code Reuse**: We will make it easier to define custom PBR shaders by making the PBR shader more modular and making it easier to import specific parts of the PBR shader.
 
 ### UI Refresh
 
 We will break ground on the Bevy Editor this year. To do that, we need a number of improvements to Bevy UI:
-* Improved "data driven UI" (potentially "reactive")
-* A solid set of pre-constructed widgets
-* Generally improved UX
+
+- Improved "data driven UI" (potentially "reactive")
+- A solid set of pre-constructed widgets
+- Generally improved UX
 
 We now have a plethora of UI experiments in the Bevy community. Over the next few months we will refine our scope and begin the process of "selecting a winner".
 
@@ -1027,7 +1033,7 @@ Preprocessing assets is a critical part of a production game engine. It cuts dow
 
 ### Scene Improvements
 
-Nested scenes, property overrides, inline assets, and nicer syntax are all on the agenda. We already have a number of working experiments in these areas, so we should see relatively quick progress here. 
+Nested scenes, property overrides, inline assets, and nicer syntax are all on the agenda. We already have a number of working experiments in these areas, so we should see relatively quick progress here.
 
 ### The New Bevy Book
 
@@ -1049,176 +1055,176 @@ Sponsorships help make my full time work on Bevy sustainable. If you believe in 
 
 A huge thanks to the **170 contributors** that made this release (and associated docs) possible! In random order:
 
-* @bilsen
-* @jcornaz
-* @Guvante
-* @Weasy666
-* @jakobhellermann
-* @gfreezy
-* @MichaelHills
-* @tcmal
-* @temhotaokeaha
-* @nicopap
-* @dimitribobkov
-* @Newbytee
-* @TheRawMeatball
-* @marcospb19
-* @MarenFayre
-* @jleflang
-* @piedoom
-* @FlyingRatBull
-* @thomasheartman
-* @dburrows0
-* @squidboylan
-* @GarettCooper
-* @nside
-* @deprilula28
-* @Jbat1Jumper
-* @HackerFoo
-* @MatheusRich
-* @inodentry
-* @cryscan
-* @aleksator
-* @Toqozz
-* @concave-sphere
-* @jesseviikari
-* @dependabot
-* @zicklag
-* @mnett82
-* @guimcaballero
-* @lukors
-* @alice-i-cecile
-* @fintelia
-* @BoxyUwU
-* @gcoakes
-* @folke
-* @iwikal
-* @tsoutsman
-* @phrohdoh
-* @julhe
-* @Byteron
-* @TehPers
-* @andoco
-* @djeedai
-* @branan
-* @follower
-* @MiniaczQ
-* @terrarier2111
-* @joshuataylor
-* @CleanCut
-* @akiross
-* @rukai
-* @PaperCow
-* @CGMossa
-* @Josh015
-* @gschup
-* @james7132
-* @MyIsaak
-* @Hoidigan
-* @mccludav
-* @mnmaita
-* @sapir
-* @gilescope
-* @VVishion
-* @sarkahn
-* @fractaloop
-* @KDecay
-* @aloucks
-* @the-notable
-* @mirkoRainer
-* @Iaiao
-* @hymm
-* @jacobgardner
-* @Protowalker
-* @godsmith99x
-* @Weibye
-* @lberrymage
-* @anchpop
-* @willolisp
-* @trolleyman
-* @msklywenn
-* @deontologician
-* @johanhelsing
-* @memoryruins
-* @ahmedcharles
-* @vabka
-* @bytebuddha
-* @louisgjohnson
-* @r00ster91
-* @parasyte
-* @illuninocte
-* @jihiggins
-* @Dimev
-* @szunami
-* @tiagolam
-* @payload
-* @mrk-its
-* @Ixentus
-* @dintho
-* @CptPotato
-* @bjorn3
-* @CAD97
-* @lwansbrough
-* @Ratysz
-* @vgel
-* @dixonwille
-* @KirmesBude
-* @Tobenaii
-* @pbalcer
-* @msvbg
-* @Philipp-M
-* @Waridley
-* @StarArawn
-* @ickk
-* @IceSentry
-* @Lythenas
-* @Shatur
-* @Grindv1k
-* @aevyrie
-* @wilk10
-* @Davier
-* @timClicks
-* @DJMcNab
-* @r4gus
-* @rparrett
-* @mfdorst
-* @Veykril
-* @thebluefish
-* @forbjok
-* @bytemuck
-* @dbearden
-* @OptimisticPeach
-* @Weibye-Breach
-* @MrGVSV
-* @RichoDemus
-* @R3DP1XL
-* @jak6jak
-* @blaind
-* @YohDeadfall
-* @cart
-* @MinerSebas
-* @CrazyRoka
-* @NiklasEi
-* @superdump
-* @lassade
-* @yetanothercheer
-* @64kramsystem
-* @mockersf
-* @billyb2
-* @molikto
-* @mtsr
-* @Abhuu
-* @kumorig
-* @yilinwei
-* @Nilirad
-* @SarthakSingh31
-* @Frizi
-* @dataphract
-* @Sheepyhead
-* @simensgreen
-* @NathanSWard
-* @remilauzier
-* @fluffysquirrels
+- @bilsen
+- @jcornaz
+- @Guvante
+- @Weasy666
+- @jakobhellermann
+- @gfreezy
+- @MichaelHills
+- @tcmal
+- @temhotaokeaha
+- @nicopap
+- @dimitribobkov
+- @Newbytee
+- @TheRawMeatball
+- @marcospb19
+- @MarenFayre
+- @jleflang
+- @piedoom
+- @FlyingRatBull
+- @thomasheartman
+- @dburrows0
+- @squidboylan
+- @GarettCooper
+- @nside
+- @deprilula28
+- @Jbat1Jumper
+- @HackerFoo
+- @MatheusRich
+- @inodentry
+- @cryscan
+- @aleksator
+- @Toqozz
+- @concave-sphere
+- @jesseviikari
+- @dependabot
+- @zicklag
+- @mnett82
+- @guimcaballero
+- @lukors
+- @alice-i-cecile
+- @fintelia
+- @BoxyUwU
+- @gcoakes
+- @folke
+- @iwikal
+- @tsoutsman
+- @phrohdoh
+- @julhe
+- @Byteron
+- @TehPers
+- @andoco
+- @djeedai
+- @branan
+- @follower
+- @MiniaczQ
+- @terrarier2111
+- @joshuataylor
+- @CleanCut
+- @akiross
+- @rukai
+- @PaperCow
+- @CGMossa
+- @Josh015
+- @gschup
+- @james7132
+- @MyIsaak
+- @Hoidigan
+- @mccludav
+- @mnmaita
+- @sapir
+- @gilescope
+- @VVishion
+- @sarkahn
+- @fractaloop
+- @KDecay
+- @aloucks
+- @the-notable
+- @mirkoRainer
+- @Iaiao
+- @hymm
+- @jacobgardner
+- @Protowalker
+- @godsmith99x
+- @Weibye
+- @lberrymage
+- @anchpop
+- @willolisp
+- @trolleyman
+- @msklywenn
+- @deontologician
+- @johanhelsing
+- @memoryruins
+- @ahmedcharles
+- @vabka
+- @bytebuddha
+- @louisgjohnson
+- @r00ster91
+- @parasyte
+- @illuninocte
+- @jihiggins
+- @Dimev
+- @szunami
+- @tiagolam
+- @payload
+- @mrk-its
+- @Ixentus
+- @dintho
+- @CptPotato
+- @bjorn3
+- @CAD97
+- @lwansbrough
+- @Ratysz
+- @vgel
+- @dixonwille
+- @KirmesBude
+- @Tobenaii
+- @pbalcer
+- @msvbg
+- @Philipp-M
+- @Waridley
+- @StarArawn
+- @ickk
+- @IceSentry
+- @Lythenas
+- @Shatur
+- @Grindv1k
+- @aevyrie
+- @wilk10
+- @Davier
+- @timClicks
+- @DJMcNab
+- @r4gus
+- @rparrett
+- @mfdorst
+- @Veykril
+- @thebluefish
+- @forbjok
+- @bytemuck
+- @dbearden
+- @OptimisticPeach
+- @Weibye-Breach
+- @MrGVSV
+- @RichoDemus
+- @R3DP1XL
+- @jak6jak
+- @blaind
+- @YohDeadfall
+- @cart
+- @MinerSebas
+- @CrazyRoka
+- @NiklasEi
+- @superdump
+- @lassade
+- @yetanothercheer
+- @64kramsystem
+- @mockersf
+- @billyb2
+- @molikto
+- @mtsr
+- @Abhuu
+- @kumorig
+- @yilinwei
+- @Nilirad
+- @SarthakSingh31
+- @Frizi
+- @dataphract
+- @Sheepyhead
+- @simensgreen
+- @NathanSWard
+- @remilauzier
+- @fluffysquirrels
 
 ## Full Change Log
 
@@ -1396,7 +1402,7 @@ A huge thanks to the **170 contributors** that made this release (and associated
 - [Made Time::time_since_startup return from last tick.][3264]
 - [Default image used in PipelinedSpriteBundle to be able to render without loading a texture][3270]
 - [make texture from sprite pipeline filterable][3236]
-- [iOS: replace cargo-lipo, and update for new macOS ][3109]
+- [iOS: replace cargo-lipo, and update for new macOS][3109]
 - [increase light intensity in pbr example][3182]
 - [Faster gltf loader][3189]
 - [Use crevice std140_size_static everywhere][3168]
@@ -1424,7 +1430,7 @@ A huge thanks to the **170 contributors** that made this release (and associated
 - [Sub app label changes][2717]
 - [Use Explicit Names for Flex Direction][2672]
 - [Make default near plane more sensible at 0.1][2703]
-- [Reduce visibility of various types and fields ][2690]
+- [Reduce visibility of various types and fields][2690]
 - [Cleanup FromResources][2601]
 - [Better error message for unsupported shader features Fixes #869][2598]
 - [Change definition of `ScheduleRunnerPlugin`][2606]
@@ -1505,7 +1511,7 @@ A huge thanks to the **170 contributors** that made this release (and associated
 - [Remove double Events::update in bevy-gilrs][2894]
 - [Fix bevy_ecs::schedule::executor_parallel::system span management][2905]
 - [Avoid some format! into immediate format!][2913]
-- [Fix panic on is_resource_* calls (#2828)][2863]
+- [Fix panic on is*resource*\* calls (#2828)][2863]
 - [Fix window size change panic][2858]
 - [fix `Default` implementation of `Image` so that size and data match][2833]
 - [Fix scale_factor_override in the winit backend][2784]
@@ -1535,7 +1541,7 @@ A huge thanks to the **170 contributors** that made this release (and associated
 - [Use bevy_reflect as path in case of no direct references][1875]
 - [Fix Events::<drain/clear> bug][2206]
 - [small ecs cleanup and remove_bundle drop bugfix][2172]
-- [Fix PBR regression for unlit materials ][2197]
+- [Fix PBR regression for unlit materials][2197]
 - [prevent memory leak when dropping ParallelSystemContainer][2176]
 - [fix diagnostic length for asset count][2165]
 - [Fixes incorrect `PipelineCompiler::compile_pipeline()` step_mode][2126]
