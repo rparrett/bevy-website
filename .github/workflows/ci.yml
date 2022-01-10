@@ -4,6 +4,23 @@ on:
   pull_request:
 
 jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # Full git history is needed to get a proper list of changed files within `super-linter`
+          fetch-depth: 0
+      - name: Run Markdown Lint
+        uses: docker://ghcr.io/github/super-linter:slim-v4
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_MARKDOWN: true
+          DEFAULT_BRANCH: main
+          # Not needed here as only one Linter is used.
+          #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -30,3 +47,4 @@ jobs:
           BUILD_DIR: .
           BUILD_ONLY: true
           TOKEN: fake-secret
+
