@@ -12,6 +12,8 @@ image_subtitle = "The Lumberyard Bistro scene rendered in the New Bevy Renderer 
 image_subtitle_link = ""
 +++
 
+<!-- markdownlint-disable no-inline-html -->
+
 TEST. Thanks to **170** contributors, **623** pull requests, and our [**generous sponsors**](https://github.com/sponsors/cart), I'm happy to announce the **Bevy 0.6** release on [crates.io](https://crates.io/crates/bevy)!
 
 For those who don't know, Bevy is a refreshingly simple data-driven game engine built in Rust. You can check out [Quick Start Guide](/learn/book/getting-started/) to get started. Bevy is also free and open source forever! You can grab the full [source code](https://github.com/bevyengine/bevy) on GitHub. Check out [Bevy Assets](https://bevyengine.org/assets) for a collection of community-developed plugins, games, and learning resources.
@@ -542,7 +544,7 @@ We are also in the process of adding "compressed texture loading", which will su
 
 ## Bevy ECS
 
-### No more `.system()`!
+### No More `.system()`
 
 <div class="release-feature-authors">authors: @DJMcNab, @Ratysz</div>
 
@@ -954,9 +956,9 @@ However, there were a variety of issues that have come up that make dual-licensi
 
 ## Bevy Org Changes
 
-### More pull request mergers!
+### More Pull Request Merges
 
-I've been at my scalability limits for a while. It has been _ cough _ ... challenging ... to build the engine features I need to, review every single pull request quickly, and preserve my mental health. I've made it this far ... sometimes by overworking myself and sometimes by letting PRs sit unmerged for longer than I'd like. By scaling out, we can have our cake and eat it too!
+I've been at my scalability limits for a while. It has been \* cough \* ... challenging ... to build the engine features I need to, review every single pull request quickly, and preserve my mental health. I've made it this far ... sometimes by overworking myself and sometimes by letting PRs sit unmerged for longer than I'd like. By scaling out, we can have our cake and eat it too!
 
 - @mockersf now has merge rights for "uncontroversial changes"
 - @alice-i-cecile now has merge rights for "uncontroversial documentation changes"
@@ -1301,7 +1303,7 @@ A huge thanks to the **170 contributors** that made this release (and associated
 - [Add set_stencil_reference to TrackedRenderPass][2885]
 - [Add despawn_recursive to EntityMut][2855]
 - [Add trace_tracy feature for Tracy profiling][2832]
-- [Expose wgpu's StencilOperation with bevy ][2819]
+- [Expose wgpu's StencilOperation with bevy][2819]
 - [add get_single variant][2793]
 - [Add builder methods to Transform][2778]
 - [add get_history function to Diagnostic][2772]
@@ -1327,7 +1329,7 @@ A huge thanks to the **170 contributors** that made this release (and associated
 - [expose texture/image conversions as From/TryFrom][2175]
 - [[ecs] implement is_empty for queries][2271]
 - [Add audio to ios example][1007]
-- [Example showing how to use AsyncComputeTaskPool and Tasks ][2180]
+- [Example showing how to use AsyncComputeTaskPool and Tasks][2180]
 - [Expose set_changed() on ResMut and Mut][2208]
 - [Impl AsRef+AsMut for Res, ResMut, and Mut][2189]
 - [Add exit_on_esc_system to examples with window][2121]
@@ -1368,7 +1370,7 @@ A huge thanks to the **170 contributors** that made this release (and associated
 - [Optional `.system()`, part 3][2422]
 - [Optional `.system()`, part 4 (run criteria)][2431]
 - [Optional `.system()`, part 6 (chaining)][2494]
-- [Make the `iter_combinators` examples prettier ][3075]
+- [Make the `iter_combinators` examples prettier][3075]
 - [Remove dead anchor.rs code][3551]
 - [gltf: load textures asynchronously using io task pool][1767]
 - [Use fully-qualified type names in Label derive.][3544]
