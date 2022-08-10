@@ -146,7 +146,7 @@ I continually deprioritized the last-mile effort required to enable pipelining i
 
 Modern gamedev workflows for most game types require visual editors. Being able to visually and interactively move entities around in a scene is critical if you are building visual, interactive experiences. Bevy has a scene system, but without visual tooling it is hard to get any value out of it. Because of this, Bevy Engine developers don't have serious incentives or feedback loops to expand and improve the scene system, and Bevy users don't have serious incentives to adopt it.
 
-I've been deliberately holding back Bevy Editor development since Bevy first released so that we can build out Bevy's core systems in a focused way. I've been saying we need Bevy UI to be "editor ready" (aka ensuring it has the required features, widgets, patterns, and UX sorted out) before we start building out editor experiences. I no longer believe that. I think we should take a more iterative approach. Unlock the value now. Learn from experience. Refine. Iterate. Repeat. As Bevy UI evolves, we will need to rewrite aspects of the editor. Yes this is retreading ground, but I now believe it is Worth It.
+I've been deliberately holding back Bevy Editor development since Bevy first released so that we can build out Bevy's core systems in a focused way. I've been saying we need Bevy UI to be "editor ready" (aka ensuring it has the required features, widgets, patterns, and UX sorted out) before we start building out editor experiences. I no longer believe that. I think we should take a more iterative approach. Unlock the value now. Learn from experience. Refine. Iterate. Repeat. As Bevy UI evolves, we will need to rewrite aspects of the editor. Yes this is retreading ground, but I now believe it is worth It.
 
 ### The Rise And Fall of Bevy Merch
 
@@ -170,7 +170,7 @@ It is important for organizations to learn from their mistakes. Now that we have
 
 ## Can @cart Predict The Future?
 
-For our last birthday, I [made some predictions for the next year](/news/bevys-first-birthday/#the-next-year-of-bevy). Lets see how well I did :)
+For our last birthday, I [made some predictions for the next year](/news/bevys-first-birthday/#the-next-year-of-bevy). Let's see how well I did :)
 
 * **Bevy 0.6 will be released in the near future**: We did indeed [release Bevy 0.6](/news/bevy-0-6), but as mentioned above, it took another 4 months. That is a stretch of the phrase "near future".
 * **Asset Pipeline Maturity**: The asset pipeline did not get asset pre-processing, import configuration, or better dependency management. This area _is_ my primary focus for the next release cycle, but it was deprioritized last year. However we have done a lot of [design work and experimentation](https://github.com/bevyengine/bevy/discussions/3972) in preparation for this.
